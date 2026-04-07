@@ -42,6 +42,14 @@ const Subscription = {
     return rows
   },
 
+  async deleteById(id) {
+    const { rows } = await pool.query(
+      'DELETE FROM subscriptions WHERE id = $1 RETURNING *',
+      [id]
+    )
+    return rows[0] || null
+  },
+
   async findByUserIdWithLatestRating(user_id) {
     const { rows } = await pool.query(
       `SELECT s.*,

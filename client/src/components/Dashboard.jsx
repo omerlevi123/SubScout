@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { getSubscriptions } from '../services/api'
+import { getSubscriptions, deleteSubscription } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import logo from '../assets/logo.png'
 import StatCard from './StatCard'
@@ -21,6 +21,16 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
   const [ratingTarget, setRatingTarget] = useState(null)
+
+  const handleDelete = async (id) => {
+    setSubscriptions((prev) => prev.filter((s) => s.id !== id))
+    try {
+      await deleteSubscription(id)
+    } catch (err) {
+      console.error(err)
+      fetchSubscriptions()
+    }
+  }
 
   const fetchSubscriptions = async () => {
     try {
@@ -152,6 +162,7 @@ export default function Dashboard() {
                     <SubscriptionCard
                       subscription={sub}
                       onRate={() => setRatingTarget(sub)}
+                      onDelete={() => handleDelete(sub.id)}
                     />
                   </motion.div>
                 ))}

@@ -1,3 +1,5 @@
+import { Trash2 } from 'lucide-react'
+
 const cycleLabel = { monthly: '/mo', yearly: '/yr', weekly: '/wk' }
 
 const toMonthly = (sub) => {
@@ -16,7 +18,7 @@ const getValueScore = (rating, monthlyCost) => {
   return { label: 'Fair Value', bar: 'bg-amber-400', badge: 'bg-amber-50 text-amber-700', pct }
 }
 
-export default function SubscriptionCard({ subscription: sub, onRate }) {
+export default function SubscriptionCard({ subscription: sub, onRate, onDelete }) {
   const rating = sub.latest_rating
   const monthlyCost = toMonthly(sub)
   const valueScore = rating !== null ? getValueScore(Number(rating), monthlyCost) : null
@@ -74,12 +76,21 @@ export default function SubscriptionCard({ subscription: sub, onRate }) {
               <span className="text-xs text-slate-400 italic">Not rated yet</span>
             )}
           </div>
-          <button
-            onClick={onRate}
-            className="text-xs font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
-          >
-            Rate
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={onRate}
+              className="text-xs font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
+            >
+              Rate
+            </button>
+            <button
+              onClick={onDelete}
+              className="text-slate-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors flex-shrink-0"
+              title="Delete subscription"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
         </div>
       </div>
 

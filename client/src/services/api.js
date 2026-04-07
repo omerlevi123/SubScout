@@ -11,3 +11,5 @@ export const createSubscription = (data) => api.post("/subscriptions", data);
 
 export const addRating = (id, rating) =>
   api.post(`/subscriptions/${id}/rating`, { rating });
+
+export const deleteSubscription = (id) => api.delete(`/subscriptions/${id}`);

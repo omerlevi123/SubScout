@@ -32,4 +32,15 @@ async function addRating(req, res) {
   }
 }
 
-module.exports = { createSubscription, getAllSubscriptions, addRating }
+async function deleteSubscription(req, res) {
+  try {
+    const { id } = req.params
+    const deleted = await Subscription.deleteById(id)
+    if (!deleted) return res.status(404).json({ error: 'Subscription not found' })
+    res.json(deleted)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+}
+
+module.exports = { createSubscription, getAllSubscriptions, addRating, deleteSubscription }

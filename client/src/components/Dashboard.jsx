@@ -1,77 +1,80 @@
-import { useState, useEffect, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { getSubscriptions, deleteSubscription } from '../services/api'
-import { useAuth } from '../context/AuthContext'
-import logo from '../assets/logo.png'
-import StatCard from './StatCard'
-import SubscriptionCard from './SubscriptionCard'
-import RateModal from './RateModal'
-import AddSubModal from './AddSubModal'
+import { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { getSubscriptions, deleteSubscription } from "../services/api";
+import { useAuth } from "../context/AuthContext";
+import logo from "../assets/logo.png";
+import StatCard from "./StatCard";
+import SubscriptionCard from "./SubscriptionCard";
+import RateModal from "./RateModal";
+import AddSubModal from "./AddSubModal";
 
 const toMonthly = (sub) => {
-  const cost = parseFloat(sub.cost)
-  if (sub.billing_cycle === 'weekly') return cost * 4.33
-  if (sub.billing_cycle === 'yearly') return cost / 12
-  return cost
-}
+  const cost = parseFloat(sub.cost);
+  if (sub.billing_cycle === "weekly") return cost * 4.33;
+  if (sub.billing_cycle === "yearly") return cost / 12;
+  return cost;
+};
 
 export default function Dashboard() {
-  const { user, signOut } = useAuth()
-  const [subscriptions, setSubscriptions] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [ratingTarget, setRatingTarget] = useState(null)
+  const { user, signOut } = useAuth();
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [ratingTarget, setRatingTarget] = useState(null);
 
   const handleDelete = async (id) => {
-    setSubscriptions((prev) => prev.filter((s) => s.id !== id))
+    setSubscriptions((prev) => prev.filter((s) => s.id !== id));
     try {
-      await deleteSubscription(id)
+      await deleteSubscription(id);
     } catch (err) {
-      console.error(err)
-      fetchSubscriptions()
+      console.error(err);
+      fetchSubscriptions();
     }
-  }
+  };
 
   const fetchSubscriptions = async () => {
     try {
-      const { data } = await getSubscriptions(user.id)
-      setSubscriptions(data)
+      const { data } = await getSubscriptions(user.id);
+      setSubscriptions(data);
     } catch (err) {
-      console.error(err)
+      console.error(err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchSubscriptions()
-  }, [])
+    fetchSubscriptions();
+  }, []);
 
   // Stats — memoized so they only recompute when subscriptions changes
   const totalSpend = useMemo(
     () => subscriptions.reduce((sum, s) => sum + toMonthly(s), 0),
-    [subscriptions]
-  )
+    [subscriptions],
+  );
 
   const { rated, avgRating } = useMemo(() => {
-    const rated = subscriptions.filter((s) => s.latest_rating !== null)
+    const rated = subscriptions.filter((s) => s.latest_rating !== null);
     const avgRating =
       rated.length > 0
-        ? (rated.reduce((sum, s) => sum + Number(s.latest_rating), 0) / rated.length).toFixed(1)
-        : null
-    return { rated, avgRating }
-  }, [subscriptions])
+        ? (
+            rated.reduce((sum, s) => sum + Number(s.latest_rating), 0) /
+            rated.length
+          ).toFixed(1)
+        : null;
+    return { rated, avgRating };
+  }, [subscriptions]);
 
   const mostValuable = useMemo(
     () =>
       subscriptions.reduce((best, s) => {
-        if (s.latest_rating === null) return best
-        const score = Number(s.latest_rating) / toMonthly(s)
-        if (!best || score > best.score) return { ...s, score }
-        return best
+        if (s.latest_rating === null) return best;
+        const score = Number(s.latest_rating) / toMonthly(s);
+        if (!best || score > best.score) return { ...s, score };
+        return best;
       }, null),
-    [subscriptions]
-  )
+    [subscriptions],
+  );
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -79,7 +82,11 @@ export default function Dashboard() {
       <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <img src={logo} alt="Sub Scout" className="w-8 h-8 object-contain" />
+            <img
+              src={logo}
+              alt="Sub Scout"
+              className="w-8 h-8 object-contain"
+            />
             <span className="text-xl font-bold text-slate-900">Sub Scout</span>
           </div>
           <div className="flex items-center gap-2">
@@ -111,15 +118,23 @@ export default function Dashboard() {
           />
           <StatCard
             label="Average Rating"
-            value={avgRating ? `${avgRating} / 10` : '—'}
-            sub={avgRating ? `across ${rated.length} rated sub${rated.length !== 1 ? 's' : ''}` : 'Rate your subscriptions'}
+            value={avgRating ? `${avgRating} / 10` : "—"}
+            sub={
+              avgRating
+                ? `across ${rated.length} rated sub${rated.length !== 1 ? "s" : ""}`
+                : "Rate your subscriptions"
+            }
             icon="⭐"
             color="violet"
           />
           <StatCard
             label="Most Valuable"
-            value={mostValuable ? mostValuable.name : '—'}
-            sub={mostValuable ? `${mostValuable.latest_rating}/10 · $${toMonthly(mostValuable).toFixed(2)}/mo` : 'Rate your subs first'}
+            value={mostValuable ? mostValuable.name : "—"}
+            sub={
+              mostValuable
+                ? `${mostValuable.latest_rating}/10 · $${toMonthly(mostValuable).toFixed(2)}/mo`
+                : "Rate your subs first"
+            }
             icon="🏆"
             color="emerald"
           />
@@ -132,21 +147,30 @@ export default function Dashboard() {
               Your Subscriptions
             </h2>
             {subscriptions.length > 0 && (
-              <span className="text-xs text-slate-400">{subscriptions.length} total</span>
+              <span className="text-xs text-slate-400">
+                {subscriptions.length} total
+              </span>
             )}
           </div>
 
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white rounded-xl border border-slate-200 p-5 h-40 animate-pulse" />
+                <div
+                  key={i}
+                  className="bg-white rounded-xl border border-slate-200 p-5 h-40 animate-pulse"
+                />
               ))}
             </div>
           ) : subscriptions.length === 0 ? (
             <div className="text-center py-20 text-slate-400">
               <p className="text-5xl mb-4">📭</p>
-              <p className="font-semibold text-slate-500">No subscriptions yet</p>
-              <p className="text-sm mt-1.5">Click "Add Subscription" to get started</p>
+              <p className="font-semibold text-slate-500">
+                No subscriptions yet
+              </p>
+              <p className="text-sm mt-1.5">
+                Click "Add Subscription" to get started
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -191,5 +215,5 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
     </div>
-  )
+  );
 }
